@@ -1,0 +1,28 @@
+# Användarkonfiguration för hyresbevakning
+user:
+  email: "din@email.com"
+  phone: "+46701234567"   # valfritt – endast om SMS är aktiverat
+
+# Filter som tillämpas utöver textfiltret i filters.py
+filters:
+  max_price: 15000        # kr/mån
+  min_size: 30            # kvm
+  areas: []               # tom lista = alla områden i Stockholm
+
+# Vilka notiser som ska skickas
+notifications:
+  email: true
+  sms: false              # kräver Twilio-konto
+
+# SMTP-inställningar (Gmail med app-lösenord rekommenderas)
+smtp:
+  sender: "din@gmail.com"
+  password: "ditt-app-losenord"   # OBS: Gmail kräver app-lösenord, ej ditt vanliga
+  server: "smtp.gmail.com"
+  port: 587
+
+# Twilio (valfritt – behövs bara om SMS aktiverats ovan)
+twilio:
+  account_sid: ""
+  auth_token: ""
+  from_number: ""

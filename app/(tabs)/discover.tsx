@@ -5,6 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +36,16 @@ export default function DiscoverScreen() {
     async (groupId: string, direction: 'left' | 'right') => {
       const vote = direction === 'right';
       const result = await castVote(groupId, vote);
+
+      if (!result.voted) {
+        // Vote failed — keep the card, show error
+        if (Platform.OS === 'web') {
+          window.alert('Något gick fel. Kontrollera din uppkoppling och försök igen.');
+        } else {
+          Alert.alert('Fel', 'Något gick fel. Kontrollera din uppkoppling och försök igen.');
+        }
+        return;
+      }
 
       // Remove the card from the stack
       removeTopCard();

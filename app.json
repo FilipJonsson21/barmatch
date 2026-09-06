@@ -12,7 +12,8 @@
     },
     "updates": {
       "enabled": true,
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/cdd2a166-2701-4bc0-a5ae-e209e9f6595c"
     },
     "ios": {
       "supportsTablet": true,
@@ -43,6 +44,13 @@
       ],
       "expo-status-bar",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cdd2a166-2701-4bc0-a5ae-e209e9f6595c"
+      }
+    },
+    "owner": "jesne"
   }
 }

@@ -379,9 +379,71 @@ function ActiveSessionView({ onEnd }: { onEnd: () => void }) {
   );
 }
 
+// ── Join Group Form ────────────────────────────────────────────────────
+function JoinGroupForm({ onJoin }: { onJoin: () => void }) {
+  const { joinSession } = useGroupSession();
+  const [sessionId, setSessionId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleJoin = async () => {
+    if (!sessionId.trim()) {
+      setError('Ange ett session-ID.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    const result = await joinSession(sessionId.trim());
+    setLoading(false);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      onJoin();
+    }
+  };
+
+  return (
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.heading}>Gå med i gäng</Text>
+      <Text style={styles.subheading}>
+        Få session-ID:t av den som skapade gänget och gå med!
+      </Text>
+
+      <Input
+        label="Session-ID"
+        placeholder="Klistra in ID här…"
+        value={sessionId}
+        onChangeText={setSessionId}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+
+      {error ? (
+        <View style={styles.errorBox}>
+          <Ionicons name="alert-circle" size={18} color={Colors.danger} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : null}
+
+      <Button
+        title="Gå med 🎉"
+        onPress={handleJoin}
+        loading={loading}
+        size="lg"
+        style={{ marginTop: Spacing.md, marginBottom: Spacing.xxl }}
+      />
+    </ScrollView>
+  );
+}
+
 // ── Main Screen ────────────────────────────────────────────────────────
 export default function GroupScreen() {
   const { session, isLoading, refreshSession } = useGroupSession();
+  const [mode, setMode] = useState<'create' | 'join'>('create');
 
   if (isLoading) return <LoadingScreen />;
 
@@ -390,7 +452,33 @@ export default function GroupScreen() {
       {session ? (
         <ActiveSessionView onEnd={refreshSession} />
       ) : (
-        <CreateGroupForm onCreate={refreshSession} />
+        <>
+          {/* Toggle */}
+          <View style={styles.modeToggle}>
+            <TouchableOpacity
+              style={[styles.modeBtn, mode === 'create' && styles.modeBtnActive]}
+              onPress={() => setMode('create')}
+            >
+              <Text style={[styles.modeBtnText, mode === 'create' && styles.modeBtnTextActive]}>
+                Skapa gäng
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modeBtn, mode === 'join' && styles.modeBtnActive]}
+              onPress={() => setMode('join')}
+            >
+              <Text style={[styles.modeBtnText, mode === 'join' && styles.modeBtnTextActive]}>
+                Gå med i gäng
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {mode === 'create' ? (
+            <CreateGroupForm onCreate={refreshSession} />
+          ) : (
+            <JoinGroupForm onJoin={refreshSession} />
+          )}
+        </>
       )}
     </SafeAreaView>
   );
@@ -543,5 +631,30 @@ const styles = StyleSheet.create({
   metaText: {
     color: Colors.textSecondary,
     fontSize: FontSizes.sm,
+  },
+  modeToggle: {
+    flexDirection: 'row',
+    margin: Spacing.lg,
+    marginBottom: 0,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 4,
+  },
+  modeBtn: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  modeBtnActive: {
+    backgroundColor: Colors.primary,
+  },
+  modeBtnText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  modeBtnTextActive: {
+    color: Colors.text,
   },
 });

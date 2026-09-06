@@ -28,6 +28,7 @@ interface GroupSessionContextValue {
   members: GroupMember[];
   isLoading: boolean;
   createSession: (input: CreateSessionInput) => Promise<{ error: string | null; session?: GroupSession }>;
+  joinSession: (sessionId: string) => Promise<{ error: string | null }>;
   endSession: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -134,6 +135,38 @@ export function GroupSessionProvider({ children }: { children: React.ReactNode }
     [user],
   );
 
+  // Join an existing group session by ID
+  const joinSession = useCallback(
+    async (sessionId: string) => {
+      if (!user) return { error: 'Ej inloggad' };
+
+      const { data: found, error: fetchError } = await supabase
+        .from('group_sessions')
+        .select('*')
+        .eq('id', sessionId.trim())
+        .eq('is_active', true)
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (fetchError || !found) {
+        return { error: 'Inget aktivt gäng hittades med det ID:t.' };
+      }
+
+      const { error: joinError } = await supabase
+        .from('group_members')
+        .insert({ group_id: found.id, user_id: user.id });
+
+      if (joinError) {
+        if (joinError.code === '23505') return { error: 'Du är redan med i det gänget.' };
+        return { error: joinError.message };
+      }
+
+      await fetchSession();
+      return { error: null };
+    },
+    [user, fetchSession],
+  );
+
   // End the current session
   const endSession = useCallback(async () => {
     if (!session) return;
@@ -154,6 +187,7 @@ export function GroupSessionProvider({ children }: { children: React.ReactNode }
         members,
         isLoading,
         createSession,
+        joinSession,
         endSession,
         refreshSession: fetchSession,
       }}
